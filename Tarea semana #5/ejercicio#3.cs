@@ -45,3 +45,27 @@ namespace NotasAsignaturas
                 asignatura.Nota = double.Parse(input);
             }
         }
+        public void MostrarNotas()
+        {
+            Console.WriteLine("\nResumen de notas:");
+            foreach (var asignatura in Asignaturas)
+            {
+                Console.WriteLine($"En {asignatura.Nombre} has sacado {asignatura.Nota}");
+            }
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Curso curso = new Curso();
+
+            curso.PedirNotas();
+            curso.MostrarNotas();
+
+            Console.WriteLine("\nPresiona cualquier tecla para salir...");
+            Console.ReadKey();
+        }
+    }
+}
