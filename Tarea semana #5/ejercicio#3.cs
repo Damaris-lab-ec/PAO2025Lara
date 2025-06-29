@@ -30,3 +30,18 @@ namespace NotasAsignaturas
                 new Asignatura("Lengua")
             };
         }
+        // Método para pedir notas al usuario
+        public void PedirNotas()
+        {
+            foreach (var asignatura in Asignaturas)
+            {
+                Console.Write($"¿Qué nota sacaste en {asignatura.Nombre}? ");
+                string input = Console.ReadLine();
+                while (!double.TryParse(input, out double nota) || nota < 0 || nota > 10)
+                {
+                    Console.Write("Introduce una nota válida entre 0 y 10: ");
+                    input = Console.ReadLine();
+                }
+                asignatura.Nota = double.Parse(input);
+            }
+        }
