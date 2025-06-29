@@ -20,3 +20,13 @@ namespace CursoAsignaturas
                 "Lengua"
             };
         }
+  // Método para mostrar las asignaturas por pantalla
+        public void MostrarAsignaturas()
+        {
+            Console.WriteLine("Asignaturas del curso:");
+            foreach (var asignatura in Asignaturas)
+            {
+                Console.WriteLine("- " + asignatura);
+            }
+        }
+    }
