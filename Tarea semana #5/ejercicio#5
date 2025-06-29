@@ -1,0 +1,15 @@
+using System;
+using System.Collections.Generic;
+
+namespace AbecedarioFiltrado
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // 1. Crear lista con el abecedario
+            List<char> abecedario = new List<char>();
+            for (char letra = 'A'; letra <= 'Z'; letra++)
+            {
+                abecedario.Add(letra);
+            }
