@@ -16,3 +16,17 @@ namespace NotasAsignaturas
 
     class Curso
     {
+         // Lista de asignaturas
+        public List<Asignatura> Asignaturas { get; private set; }
+
+        public Curso()
+        {
+            Asignaturas = new List<Asignatura>
+            {
+                new Asignatura("Matemáticas"),
+                new Asignatura("Física"),
+                new Asignatura("Química"),
+                new Asignatura("Historia"),
+                new Asignatura("Lengua")
+            };
+        }
