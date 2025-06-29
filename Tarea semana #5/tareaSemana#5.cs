@@ -30,3 +30,20 @@ namespace CursoAsignaturas
             }
         }
     }
+// Clase principal con Main
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            // Crear instancia del curso
+            Curso curso = new Curso();
+
+            // Mostrar asignaturas
+            curso.MostrarAsignaturas();
+
+            // Esperar entrada para cerrar
+            Console.WriteLine("\nPresiona cualquier tecla para salir...");
+            Console.ReadKey();
+        }
+    }
+}
