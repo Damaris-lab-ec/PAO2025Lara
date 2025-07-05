@@ -10,3 +10,11 @@ public void Invertir()
         anterior = actual;
         actual = siguiente;
     }
+        siguiente = actual.siguiente;
+        actual.siguiente = anterior;
+        anterior = actual;
+        actual = siguiente;
+    }
+
+cabeza = anterior;
+}
