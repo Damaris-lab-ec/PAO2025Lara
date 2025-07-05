@@ -1,44 +1,39 @@
-public void Invertir()
+using System;
+
+// ... other using statements if needed
+
+// Example of a class that might contain Invertir
+public class ListaEnlazada // Assuming Invertir works with a linked list
 {
-    Nodo anterior = null;
-    Nodo actual = cabeza;
-    Nodo siguiente = null;
-     while (actual != null)
+    // You might have fields like 'cabeza' here
+    private object cabeza; // Example field
+
+    public void Invertir()
     {
-        siguiente = actual.siguiente;
-        actual.siguiente = anterior;
-        anterior = actual;
-        actual = siguiente;
-    }
-        siguiente = actual.siguiente;
-        actual.siguiente = anterior;
-        anterior = actual;
-        actual = siguiente;
-    }
+        // Your existing Invertir method code
+        // ...
+        object siguiente = actual.siguiente; // Assuming actual is defined elsewhere, like a class field
+        object actual.siguiente = anterior;
+        object anterior = actual;
+        object actual = siguiente;
 
-cabeza = anterior;
+        siguiente = actual.siguiente;
+        actual.siguiente = anterior;
+        anterior = actual;
+        actual = siguiente;
+
+        cabeza = anterior; // Ensure 'cabeza' is accessible in this context
+    }
 }
-
-//Ejemplo de uso en Main():\\
 
 class Program
 {
     static void Main(string[] args)
     {
+        // Your Main method code here
+        // For example, to use Invertir:
         ListaEnlazada lista = new ListaEnlazada();
-        lista.AgregarAlFinal(10);
-        lista.AgregarAlFinal(20);
-        lista.AgregarAlFinal(30);
-        lista.AgregarAlFinal(40);
-        
-         Console.WriteLine("Lista original:");
-        lista.Mostrar();
-
-        Console.WriteLine("\nNúmero de elementos: " + lista.ContarElementos());
-
-        lista.Invertir();
-
-        Console.WriteLine("\nLista invertida:");
-        lista.Mostrar();
+        // ... populate list ...
+        lista.Invertir(); // Call the method
     }
 }
