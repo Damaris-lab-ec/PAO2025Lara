@@ -1,16 +1,35 @@
-public void Invertir()
+using System;
+
+class ListaEnlazada
 {
-    Nodo anterior = null;
-    Nodo actual = cabeza;
-    Nodo siguiente = null;
+    public Nodo cabeza;
 
-    while (actual != null)
+    public void Invertir()
     {
-        siguiente = actual.siguiente;
-        actual.siguiente = anterior;
-        anterior = actual;
-        actual = siguiente;
-    }
+        Nodo anterior = null;
+        Nodo actual = cabeza;
+        Nodo siguiente = null;
 
-    cabeza = anterior;
+        while (actual != null)
+        {
+            siguiente = actual.siguiente;
+            actual.siguiente = anterior;
+            anterior = actual;
+            actual = siguiente;
+        }
+
+        cabeza = anterior;
+    }
+}
+
+class Nodo
+{
+    public int valor;
+    public Nodo siguiente;
+
+    public Nodo(int valor)
+    {
+        this.valor = valor;
+        this.siguiente = null;
+    }
 }
