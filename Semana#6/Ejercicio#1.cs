@@ -4,9 +4,17 @@ class Nodo
 {
     public int valor;
     public Nodo siguiente;
-   public Nodo(int valor)
+    public Nodo(int valor)
     {
         this.valor = valor;
         this.siguiente = null;
     }
 }
+class ListaEnlazada
+{
+    public Nodo cabeza;
+
+    public ListaEnlazada()
+    {
+        cabeza = null;
+    }
