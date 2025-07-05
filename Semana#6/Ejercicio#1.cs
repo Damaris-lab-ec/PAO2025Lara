@@ -35,3 +35,14 @@ Nodo actual = cabeza;
             actual.siguiente = nuevo;
         }
     }
+  public int ContarElementos()
+    {
+        int contador = 0;
+        Nodo actual = cabeza;
+        while (actual != null)
+        {
+            contador++;
+            actual = actual.siguiente;
+        }
+        return contador;
+    }
