@@ -30,3 +30,15 @@ class Program
         lista.AgregarAlFinal(20);
         lista.AgregarAlFinal(30);
         lista.AgregarAlFinal(40);
+        
+         Console.WriteLine("Lista original:");
+        lista.Mostrar();
+
+        Console.WriteLine("\nNúmero de elementos: " + lista.ContarElementos());
+
+        lista.Invertir();
+
+        Console.WriteLine("\nLista invertida:");
+        lista.Mostrar();
+    }
+}
