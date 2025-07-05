@@ -46,3 +46,14 @@ Nodo actual = cabeza;
         }
         return contador;
     }
+     public void Mostrar()
+    {
+        Nodo actual = cabeza;
+        while (actual != null)
+        {
+            Console.Write(actual.valor + " -> ");
+            actual = actual.siguiente;
+        }
+        Console.WriteLine("null");
+    }
+}
