@@ -18,3 +18,15 @@ public void Invertir()
 
 cabeza = anterior;
 }
+
+//Ejemplo de uso en Main():\\
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        ListaEnlazada lista = new ListaEnlazada();
+        lista.AgregarAlFinal(10);
+        lista.AgregarAlFinal(20);
+        lista.AgregarAlFinal(30);
+        lista.AgregarAlFinal(40);
