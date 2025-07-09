@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
-
+using System;
+using System.Collections.Generic;
 class BalanceoParentesis
 {
     /// <summary>
@@ -49,8 +50,7 @@ class BalanceoParentesis
     }
 }
 
-using System;
-using System.Collections.Generic;
+
 
 class Torre
 {
