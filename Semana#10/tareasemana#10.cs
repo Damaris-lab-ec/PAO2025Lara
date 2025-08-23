@@ -31,3 +31,12 @@ namespace VacunacionCOVID19
                 
                 vacunadosPfizer.Add(ciudadano);
             }
+  // Aplicar operaciones de teoría de conjuntos
+            // 1. Ciudadanos que no se han vacunado
+            HashSet<string> noVacunados = new HashSet<string>(ciudadanos);
+            noVacunados.ExceptWith(vacunadosPfizer);
+            noVacunados.ExceptWith(vacunadosAstraZeneca);
+
+            // 2. Ciudadanos que han recibido ambas dosis (intersección)
+            HashSet<string> ambasDosis = new HashSet<string>(vacunadosPfizer);
+            ambasDosis.IntersectWith(vacunadosAstraZeneca);
