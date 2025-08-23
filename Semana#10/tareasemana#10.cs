@@ -40,3 +40,6 @@ namespace VacunacionCOVID19
             // 2. Ciudadanos que han recibido ambas dosis (intersección)
             HashSet<string> ambasDosis = new HashSet<string>(vacunadosPfizer);
             ambasDosis.IntersectWith(vacunadosAstraZeneca);
+            // 3. Ciudadanos que solo han recibido Pfizer (diferencia)
+            HashSet<string> soloPfizer = new HashSet<string>(vacunadosPfizer);
+            soloPfizer.ExceptWith(vacunadosAstraZeneca);
