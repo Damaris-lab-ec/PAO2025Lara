@@ -45,3 +45,12 @@ namespace VacunacionCOVID19
             // 4. Ciudadanos que solo han recibido AstraZeneca (diferencia)
             HashSet<string> soloAstraZeneca = new HashSet<string>(vacunadosAstraZeneca);
             soloAstraZeneca.ExceptWith(vacunadosPfizer);
+            // Mostrar resultados
+            Console.WriteLine("=== INFORME DE VACUNACIÓN COVID-19 ===");
+            Console.WriteLine($"Total de ciudadanos: {ciudadanos.Count}");
+            Console.WriteLine($"Vacunados con Pfizer: {vacunadosPfizer.Count}");
+            Console.WriteLine($"Vacunados con AstraZeneca: {vacunadosAstraZeneca.Count}");
+            Console.WriteLine($"No vacunados: {noVacunados.Count}");
+            Console.WriteLine($"Con ambas dosis: {ambasDosis.Count}");
+            Console.WriteLine($"Solo Pfizer: {soloPfizer.Count}");
+            Console.WriteLine($"Solo AstraZeneca: {soloAstraZeneca.Count}");
