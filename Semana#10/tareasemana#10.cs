@@ -36,10 +36,12 @@ namespace VacunacionCOVID19
             HashSet<string> noVacunados = new HashSet<string>(ciudadanos);
             noVacunados.ExceptWith(vacunadosPfizer);
             noVacunados.ExceptWith(vacunadosAstraZeneca);
-
             // 2. Ciudadanos que han recibido ambas dosis (intersección)
             HashSet<string> ambasDosis = new HashSet<string>(vacunadosPfizer);
             ambasDosis.IntersectWith(vacunadosAstraZeneca);
             // 3. Ciudadanos que solo han recibido Pfizer (diferencia)
             HashSet<string> soloPfizer = new HashSet<string>(vacunadosPfizer);
             soloPfizer.ExceptWith(vacunadosAstraZeneca);
+            // 4. Ciudadanos que solo han recibido AstraZeneca (diferencia)
+            HashSet<string> soloAstraZeneca = new HashSet<string>(vacunadosAstraZeneca);
+            soloAstraZeneca.ExceptWith(vacunadosPfizer);
