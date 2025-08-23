@@ -54,3 +54,12 @@ namespace VacunacionCOVID19
             Console.WriteLine($"Con ambas dosis: {ambasDosis.Count}");
             Console.WriteLine($"Solo Pfizer: {soloPfizer.Count}");
             Console.WriteLine($"Solo AstraZeneca: {soloAstraZeneca.Count}");
+            // Validación: La suma debe ser igual al total
+            int totalVerificacion = noVacunados.Count + ambasDosis.Count + soloPfizer.Count + soloAstraZeneca.Count;
+            Console.WriteLine($"\nValidación: Suma de categorías = {totalVerificacion} (debe ser {ciudadanos.Count})");
+            
+            Console.WriteLine("\nPresione cualquier tecla para salir...");
+            Console.ReadKey();
+        }
+    }
+}
