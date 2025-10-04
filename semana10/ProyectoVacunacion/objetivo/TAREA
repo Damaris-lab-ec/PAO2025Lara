@@ -1,220 +1,213 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
+// ===============================================
+//  PROCESAMIENTO DE DATOS FICTICIOS DE VACUNACIÓN
+//  - Sin using ni namespace en la cabecera.
+//  - Top-level statements (C# 9+ / .NET 6+).
+//  - Operaciones de teoría de conjuntos con HashSet<T>.
+//  - Código ampliamente comentado.
+// ===============================================
 
-namespace VacunacionCOVID19
+// -------------------------------
+// 1) Parámetros configurables
+// -------------------------------
+int totalCiudadanos = 500;   // Tamaño del universo U
+int totalPfizer     = 75;    // |P| = 75 (Pfizer, al menos 1 dosis)
+int totalAstra      = 75;    // |A| = 75 (AstraZeneca, al menos 1 dosis)
+
+// Porcentaje de personas con 1 dosis que recibirán 2da dosis (misma marca)
+double porcentajeSegundaDosis = 0.60; // 60%
+
+// Generador aleatorio para muestreos reproducibles (puedes fijar una seed si deseas)
+// var rng = new System.Random(12345);
+var rng = new System.Random();
+
+// -------------------------------
+// 2) Construir el universo U = { "Ciudadano 1", ..., "Ciudadano 500" }
+// -------------------------------
+var U = new System.Collections.Generic.List<string>(capacity: totalCiudadanos);
+for (int i = 1; i <= totalCiudadanos; i++)
 {
-    class Program
+    U.Add("Ciudadano " + i);
+}
+
+// -------------------------------
+// 3) Muestrear sin repetición los conjuntos base P (Pfizer) y A (Astra)
+//    - Ambos se eligen del universo U
+//    - No se permite repetir dentro de cada conjunto
+// -------------------------------
+var P = SampleDistinct(U, totalPfizer, rng); // Lista única de 75 ciudadanos Pfizer
+var A = SampleDistinct(U, totalAstra,  rng); // Lista única de 75 ciudadanos Astra
+
+// Convertimos a HashSet para operaciones de conjuntos en O(1) promedio
+var setU = new System.Collections.Generic.HashSet<string>(U);
+var setP = new System.Collections.Generic.HashSet<string>(P);
+var setA = new System.Collections.Generic.HashSet<string>(A);
+
+// -------------------------------
+// 4) Registro de dosis por ciudadano
+//    - Cada ciudadano puede tener 0, 1 o 2 dosis, pero solo de UNA marca.
+//    - “Ambas dosis” = 2 dosis (misma marca).
+// -------------------------------
+var registro = new System.Collections.Generic.Dictionary<string, Vacunacion>(capacity: totalCiudadanos);
+
+// Inicializamos el registro en 0 dosis
+for (int i = 0; i < U.Count; i++)
+{
+    string c = U[i];
+    registro[c] = new Vacunacion { Ciudadano = c, DosisPfizer = 0, DosisAstra = 0 };
+}
+
+// Asignamos 1ra dosis según pertenencia a P o A
+foreach (var c in setP) { registro[c].DosisPfizer = 1; }
+foreach (var c in setA) { registro[c].DosisAstra  = 1; }
+
+// Determinar quiénes son elegibles a 2da dosis: exactamente una marca con 1 dosis
+var elegiblesSegunda = new System.Collections.Generic.List<string>();
+foreach (var kv in registro)
+{
+    bool tienePf1 = kv.Value.DosisPfizer == 1;
+    bool tieneAs1 = kv.Value.DosisAstra  == 1;
+
+    // XOR lógico sin usar LINQ: exactamente una de las dos marcas
+    if ( (tienePf1 && !tieneAs1) || (!tienePf1 && tieneAs1) )
+        elegiblesSegunda.Add(kv.Key);
+}
+
+// Cantidad a otorgar 2da dosis (redondeo comercial)
+int totalSegunda = (int)System.Math.Round(
+    elegiblesSegunda.Count * porcentajeSegundaDosis,
+    System.MidpointRounding.AwayFromZero
+);
+
+// Seleccionar aleatoriamente quiénes reciben 2da dosis
+var segundaDosisSeleccion = SampleDistinct(elegiblesSegunda, totalSegunda, rng);
+
+// Asignar 2da dosis a la misma marca ya aplicada
+for (int i = 0; i < segundaDosisSeleccion.Count; i++)
+{
+    var c = segundaDosisSeleccion[i];
+    var v = registro[c];
+    if (v.DosisPfizer == 1) v.DosisPfizer = 2;
+    if (v.DosisAstra  == 1) v.DosisAstra  = 2;
+}
+
+// -------------------------------
+// 5) Conjuntos pedidos por el enunciado (teoría de conjuntos)
+//    - Vacunados ≥1 dosis = P ∪ A
+//    - No vacunados       = U − (P ∪ A)
+//    - Solo Pfizer        = P − A
+//    - Solo AstraZeneca   = A − P
+//    - Ambas dosis        = { c | dosisTotales(c) >= 2 } (misma marca)
+// -------------------------------
+
+// Vacunados ≥1 dosis = P ∪ A
+var vacunadosAlMenosUna = new System.Collections.Generic.HashSet<string>(setP);
+vacunadosAlMenosUna.UnionWith(setA);
+
+// No vacunados = U − (P ∪ A)
+var noVacunados = new System.Collections.Generic.HashSet<string>(setU);
+noVacunados.ExceptWith(vacunadosAlMenosUna);
+
+// Solo Pfizer = P − A
+var soloPfizer = new System.Collections.Generic.HashSet<string>(setP);
+soloPfizer.ExceptWith(setA);
+
+// Solo AstraZeneca = A − P
+var soloAstra = new System.Collections.Generic.HashSet<string>(setA);
+soloAstra.ExceptWith(setP);
+
+// Ambas dosis: recorremos el registro y añadimos quienes tengan 2 dosis (cualquiera de las marcas)
+var ambasDosis = new System.Collections.Generic.HashSet<string>();
+foreach (var kv in registro)
+{
+    if (kv.Value.DosisPfizer >= 2 || kv.Value.DosisAstra >= 2)
+        ambasDosis.Add(kv.Key);
+}
+
+// -------------------------------
+// 6) Salida por consola (resumen)
+// -------------------------------
+System.Console.WriteLine("=== Resumen (datos ficticios) ===");
+System.Console.WriteLine("Total ciudadanos (U): " + setU.Count);
+System.Console.WriteLine("Pfizer (P): " + setP.Count);
+System.Console.WriteLine("AstraZeneca (A): " + setA.Count);
+System.Console.WriteLine("Vacunados ≥1 dosis (P ∪ A): " + vacunadosAlMenosUna.Count);
+System.Console.WriteLine("No vacunados (U − (P ∪ A)): " + noVacunados.Count);
+System.Console.WriteLine("Solo Pfizer (P − A): " + soloPfizer.Count);
+System.Console.WriteLine("Solo Astra (A − P): " + soloAstra.Count);
+System.Console.WriteLine("Ambas dosis (2 dosis, misma marca): " + ambasDosis.Count);
+
+// -------------------------------
+// 7) Exportar listados a archivos .txt para revisión
+// -------------------------------
+System.IO.Directory.CreateDirectory("salidas");
+
+// Guardamos los conjuntos en archivos ordenados alfabéticamente
+WriteSetToFileSorted("salidas/no_vacunados.txt",      noVacunados);
+WriteSetToFileSorted("salidas/ambas_dosis.txt",       ambasDosis);
+WriteSetToFileSorted("salidas/solo_pfizer.txt",       soloPfizer);
+WriteSetToFileSorted("salidas/solo_astrazeneca.txt",  soloAstra);
+
+System.Console.WriteLine();
+System.Console.WriteLine("Archivos generados en carpeta 'salidas/'.");
+System.Console.WriteLine("Presiona una tecla para salir…");
+System.Console.ReadKey();
+
+// ========================================================================
+//  FUNCIONES LOCALES (sin using; todo con nombres totalmente calificados)
+// ========================================================================
+
+/// <summary>
+/// Selecciona 'count' elementos ÚNICOS de 'source' sin repetición (Fisher-Yates parcial).
+/// </summary>
+System.Collections.Generic.List<string> SampleDistinct(
+    System.Collections.Generic.IEnumerable<string> source,
+    int count,
+    System.Random rngLocal)
+{
+    var list = new System.Collections.Generic.List<string>(source);
+
+    if (count < 0) throw new System.ArgumentOutOfRangeException("count");
+    if (count > list.Count) throw new System.ArgumentException("La muestra excede el tamaño del universo.");
+
+    // Barajado parcial Fisher-Yates:
+    // Intercambiamos posiciones para "traer" al frente 'count' elementos aleatorios
+    for (int i = 0; i < count; i++)
     {
-        // Semilla fija para que el muestreo sea reproducible
-        const int Semilla = 271828;
-
-        static void Main()
-        {
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-
-            // ===== Requisito: Universo U con 500 ciudadanos =====
-            List<string> universo = CrearUniverso(500); // "Ciudadano 1"... "Ciudadano 500"
-
-            // ===== Requisito: 75 Pfizer (P) y 75 AstraZeneca (A) =====
-            Random rng = new Random(Semilla);
-            List<string> pfizer = MuestrearSinRepeticion(universo, 75, rng);
-            List<string> astra  = MuestrearSinRepeticion(universo, 75, rng);
-
-            // ===== Teoría de conjuntos =====
-            // P ∩ A
-            List<string> ambas = Interseccion(pfizer, astra);
-
-            // P \ A
-            List<string> soloPfizer = Diferencia(pfizer, astra);
-
-            // A \ P
-            List<string> soloAstra = Diferencia(astra, pfizer);
-
-            // U \ (P ∪ A)
-            List<string> unionPA = Union(pfizer, astra);
-            List<string> noVacunados = Diferencia(universo, unionPA);
-
-            // ===== Salida por consola =====
-            ImprimirResumen("RESUMEN CAMPAÑA COVID-19", universo.Count, pfizer.Count, astra.Count,
-                            ambas.Count, soloPfizer.Count, soloAstra.Count, noVacunados.Count);
-
-            ImprimirLista("No vacunados (U \\ (P ∪ A))", noVacunados, 25);
-            ImprimirLista("Ambas dosis (P ∩ A)", ambas, 25);
-            ImprimirLista("Solo Pfizer (P \\ A)", soloPfizer, 25);
-            ImprimirLista("Solo AstraZeneca (A \\ P)", soloAstra, 25);
-
-            // ===== Exportación opcional a CSV =====
-            string salida = Path.Combine(AppContext.BaseDirectory, "salida");
-            Directory.CreateDirectory(salida);
-            GuardarCSV(Path.Combine(salida, "01_NoVacunados.csv"), noVacunados);
-            GuardarCSV(Path.Combine(salida, "02_AmbasDosis.csv"), ambas);
-            GuardarCSV(Path.Combine(salida, "03_SoloPfizer.csv"), soloPfizer);
-            GuardarCSV(Path.Combine(salida, "04_SoloAstraZeneca.csv"), soloAstra);
-            GuardarResumenTXT(Path.Combine(salida, "Resumen.txt"), universo.Count, pfizer.Count, astra.Count,
-                               ambas.Count, soloPfizer.Count, soloAstra.Count, noVacunados.Count);
-
-            Console.WriteLine();
-            Console.WriteLine("Archivos exportados en: " + salida);
-            Console.WriteLine("Presione una tecla para salir...");
-            Console.ReadKey();
-        }
-
-        // ----------------- Utilidades -----------------
-
-        // Crea "Ciudadano 1" ... "Ciudadano n"
-        static List<string> CrearUniverso(int n)
-        {
-            List<string> u = new List<string>(n);
-            for (int i = 1; i <= n; i++)
-                u.Add("Ciudadano " + i);
-            return u;
-        }
-
-        // Muestreo aleatorio sin repetición a partir de baseLista
-        static List<string> MuestrearSinRepeticion(List<string> baseLista, int cantidad, Random rng)
-        {
-            if (cantidad < 0 || cantidad > baseLista.Count)
-                throw new ArgumentException("Cantidad de muestra inválida.");
-
-            List<string> muestra = new List<string>(cantidad);
-            HashSet<int> usados = new HashSet<int>(); // solo para índices, evita repetidos
-            while (muestra.Count < cantidad)
-            {
-                int idx = rng.Next(0, baseLista.Count);
-                if (!usados.Contains(idx))
-                {
-                    usados.Add(idx);
-                    muestra.Add(baseLista[idx]);
-                }
-            }
-            return muestra;
-        }
-
-        // Unión (sin duplicados)
-        static List<string> Union(List<string> a, List<string> b)
-        {
-            List<string> r = new List<string>(a.Count + b.Count);
-            // Agregar A
-            for (int i = 0; i < a.Count; i++)
-                if (!Contiene(r, a[i])) r.Add(a[i]);
-            // Agregar B
-            for (int i = 0; i < b.Count; i++)
-                if (!Contiene(r, b[i])) r.Add(b[i]);
-            return r;
-        }
-
-        // Intersección
-        static List<string> Interseccion(List<string> a, List<string> b)
-        {
-            List<string> r = new List<string>();
-            // Recorremos la más pequeña
-            List<string> menor = (a.Count <= b.Count) ? a : b;
-            List<string> mayor = (a.Count <= b.Count) ? b : a;
-
-            for (int i = 0; i < menor.Count; i++)
-                if (Contiene(mayor, menor[i])) r.Add(menor[i]);
-            return r;
-        }
-
-        // Diferencia A \ B
-        static List<string> Diferencia(List<string> a, List<string> b)
-        {
-            List<string> r = new List<string>();
-            for (int i = 0; i < a.Count; i++)
-                if (!Contiene(b, a[i])) r.Add(a[i]);
-            return r;
-        }
-
-        // Contiene (búsqueda lineal)
-        static bool Contiene(List<string> lista, string valor)
-        {
-            for (int i = 0; i < lista.Count; i++)
-                if (lista[i] == valor) return true;
-            return false;
-        }
-
-        // Salidas
-        static void ImprimirResumen(string titulo, int totalU, int totalP, int totalA,
-                                    int totalInter, int totalSoloP, int totalSoloA, int totalNoVac)
-        {
-            Console.WriteLine("===================================================");
-            Console.WriteLine(titulo);
-            Console.WriteLine("===================================================");
-            Console.WriteLine($"Total ciudadanos (U):             {totalU}");
-            Console.WriteLine($"Vacunados Pfizer (P):             {totalP}");
-            Console.WriteLine($"Vacunados AstraZeneca (A):        {totalA}");
-            Console.WriteLine($"Ambas dosis (P ∩ A):              {totalInter}");
-            Console.WriteLine($"Solo Pfizer (P \\ A):              {totalSoloP}");
-            Console.WriteLine($"Solo AstraZeneca (A \\ P):         {totalSoloA}");
-            Console.WriteLine($"No vacunados (U \\ (P ∪ A)):       {totalNoVac}");
-            Console.WriteLine();
-        }
-
-        static void ImprimirLista(string titulo, List<string> datos, int maximo)
-        {
-            Console.WriteLine("---- " + titulo + $" (n={datos.Count}) ----");
-            int limite = (datos.Count < maximo) ? datos.Count : maximo;
-            for (int i = 0; i < limite; i++)
-                Console.WriteLine($"  - {datos[i]}");
-            if (datos.Count > maximo) Console.WriteLine("  ...");
-            Console.WriteLine();
-        }
-
-        static void GuardarCSV(string ruta, List<string> datos)
-        {
-            using (var sw = new StreamWriter(ruta, false, System.Text.Encoding.UTF8))
-            {
-                sw.WriteLine("id,nombre");
-                for (int i = 0; i < datos.Count; i++)
-                {
-                    // "Ciudadano X" -> X
-                    string nombre = datos[i];
-                    int id = ExtraerId(nombre);
-                    sw.WriteLine(id + "," + nombre);
-                }
-            }
-        }
-
-        static int ExtraerId(string nombre)
-        {
-            // nombre = "Ciudadano <numero>"
-            // buscamos el último espacio y parseamos lo que siga
-            for (int i = nombre.Length - 1; i >= 0; i--)
-            {
-                if (nombre[i] == ' ')
-                {
-                    string sub = nombre.Substring(i + 1);
-                    int val;
-                    if (int.TryParse(sub, out val)) return val;
-                    break;
-                }
-            }
-            return -1;
-        }
-
-        static void GuardarResumenTXT(string ruta,
-            int totalU, int totalP, int totalA,
-            int totalInter, int totalSoloP, int totalSoloA, int totalNoVac)
-        {
-            using (var sw = new StreamWriter(ruta, false, System.Text.Encoding.UTF8))
-            {
-                sw.WriteLine("RESUMEN CAMPAÑA COVID-19 (Teoría de Conjuntos)");
-                sw.WriteLine("----------------------------------------------");
-                sw.WriteLine($"Total ciudadanos (U):             {totalU}");
-                sw.WriteLine($"Vacunados Pfizer (P):             {totalP}");
-                sw.WriteLine($"Vacunados AstraZeneca (A):        {totalA}");
-                sw.WriteLine($"Ambas dosis (P ∩ A):              {totalInter}");
-                sw.WriteLine($"Solo Pfizer (P \\ A):              {totalSoloP}");
-                sw.WriteLine($"Solo AstraZeneca (A \\ P):         {totalSoloA}");
-                sw.WriteLine($"No vacunados (U \\ (P ∪ A)):       {totalNoVac}");
-                sw.WriteLine();
-                sw.WriteLine("Definiciones:");
-                sw.WriteLine("  - No vacunados = U \\ (P ∪ A)");
-                sw.WriteLine("  - Ambas dosis  = P ∩ A");
-                sw.WriteLine("  - Solo Pfizer  = P \\ A");
-                sw.WriteLine("  - Solo Astra   = A \\ P");
-            }
-        }
+        int j = rngLocal.Next(i, list.Count);
+        var tmp = list[i];
+        list[i] = list[j];
+        list[j] = tmp;
     }
+
+    // Tomamos los 'count' primeros, que ahora son aleatorios y únicos
+    var result = new System.Collections.Generic.List<string>(capacity: count);
+    for (int k = 0; k < count; k++)
+        result.Add(list[k]);
+
+    return result;
+}
+
+/// <summary>
+/// Escribe un conjunto a archivo de texto, ordenado alfabéticamente (sin LINQ).
+/// </summary>
+void WriteSetToFileSorted(string path, System.Collections.Generic.HashSet<string> set)
+{
+    // Convertimos HashSet a List para poder ordenar sin LINQ
+    var list = new System.Collections.Generic.List<string>(set);
+
+    // Ordenamiento alfabético simple (List<T>.Sort usa orden natural de string)
+    list.Sort(System.StringComparer.Ordinal);
+
+    // Escritura de todas las líneas
+    System.IO.File.WriteAllLines(path, list);
+}
+
+// ===============================================
+//  Clase simple para llevar el conteo de dosis
+// ===============================================
+class Vacunacion
+{
+    public string Ciudadano { get; set; } = "";
+    public int DosisPfizer { get; set; }  // 0, 1 o 2 dosis (Pfizer)
+    public int DosisAstra  { get; set; }  // 0, 1 o 2 dosis (AstraZeneca)
 }
